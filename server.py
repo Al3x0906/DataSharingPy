@@ -3,9 +3,8 @@ import threading
 import os
 import tqdm
 
-PORT = 5001
 SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
+ADDR = (SERVER, 0)
 FORMAT = 'utf-8'
 SEPARATOR=":"
 BUFFER_SIZE = 4096
@@ -13,15 +12,18 @@ BUFFER_SIZE = 4096
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
-
+def file_path():
+    pass
+    
 def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected :")
+    print(f"[NEW CONNECTION] {addr} connected:  ")
     #Write Code to Send files here
-    filename = "./filename.txt"
-    filesize = os.path.getsize(filename)
-    conn.send(f"{filename}{SEPARATOR}{filesize}".encode(FORMAT))
-    progress = tqdm.tqdm(range(filesize),f"Sending {filename}" , unit ="B" , unit_scale=True , unit_divisor=1024)
-    with open(filename,"rb") as f:
+    filepath = "filename.txt"
+    print(filepath)
+    filesize = os.path.getsize(filepath)
+    conn.send(f"{filepath}{SEPARATOR}{filesize}".encode(FORMAT))
+    progress = tqdm.tqdm(range(filesize),f"Sending {filepath}" , unit ="B" , unit_scale=True , unit_divisor=1024)
+    with open(filepath,"rb") as f:
         while True:
             bytes_read = f.read(BUFFER_SIZE)
             if not bytes_read:
@@ -29,12 +31,17 @@ def handle_client(conn, addr):
                 break
             conn.send(bytes_read)
             progress.update(len(bytes_read))
-        conn.close()
+        conn_close(conn)
 
 
-def start():
+def conn_close(conn):
+    print("connection closed!!")
+    conn.close()
+
+
+def start(server):
     server.listen(5)
-    print(f"[LISTENING] on {SERVER}")
+    print(f"[LISTENING] on {server.getsockname()}")
     while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
@@ -43,4 +50,5 @@ def start():
 
 
 print("[STARTING] server is starting : ")
-start()
+
+start(server)
