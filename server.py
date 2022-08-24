@@ -2,6 +2,7 @@ import socket
 import threading
 import os
 import tqdm
+import sys
 
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, 0)
@@ -13,13 +14,14 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 def file_path():
-    pass
+    fn = sys.argv
+    fn.pop(0)
+    return fn 
     
 def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected:  ")
-    #Write Code to Send files here
-    filepath = "filename.txt"
-    print(filepath)
+    files=file_path()
+    filepath=files[0]
     filesize = os.path.getsize(filepath)
     conn.send(f"{filepath}{SEPARATOR}{filesize}".encode(FORMAT))
     progress = tqdm.tqdm(range(filesize),f"Sending {filepath}" , unit ="B" , unit_scale=True , unit_divisor=1024)
@@ -31,22 +33,23 @@ def handle_client(conn, addr):
                 break
             conn.send(bytes_read)
             progress.update(len(bytes_read))
-        conn_close(conn)
+    conn_close(conn)
 
 
 def conn_close(conn):
-    print("connection closed!!")
+    print("\nConnection closed!!")
     conn.close()
 
 
 def start(server):
-    server.listen(5)
+    server.listen()
     print(f"[LISTENING] on {server.getsockname()}")
     while True:
         conn, addr = server.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        print(f"[ACTIVE] {threading.active_count()-1} ")
+        # thread = threading.Thread(target=handle_client, args=(conn, addr))
+        # thread.start()
+        # print(f"[ACTIVE] {threading.active_count()-1} ")
+        handle_client(conn, addr)
 
 
 print("[STARTING] server is starting : ")

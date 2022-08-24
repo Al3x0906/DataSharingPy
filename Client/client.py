@@ -15,15 +15,16 @@ client.connect(ADDR)
 def receive(client):
     # Code to send files
     received = client.recv(BUFFER_SIZE).decode(FORMAT)
-    filename , filesize = received.split(SEPARATOR)
+    filename , filesize= received.split(SEPARATOR)
     filename = os.path.basename(filename)
     filesize = int(filesize)
     progress = tqdm.tqdm(range(filesize), f"Receiving {filename} " , unit ="B", unit_scale=True, unit_divisor=1024)
     with open(f"./{filename}","wb") as f:
-        while True :
+        while  True:
             bytes_read = client.recv(BUFFER_SIZE)
             if not bytes_read:
                 progress.update(len(bytes_read))
+                f.close()
                 break
             f.write(bytes_read)
             progress.update(len(bytes_read))
